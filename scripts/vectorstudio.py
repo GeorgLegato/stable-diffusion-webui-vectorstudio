@@ -98,38 +98,15 @@ class Script(scripts.Script):
         # Add the prompt from above
         p.prompt += StyleDict[poUseColor]
 
-        print (pathlib.Path().resolve())
-
         PO_TO_CALL = scripts.basedir() + "\\extensions\\stable-diffusion-webui-vectorstudio\\bin\\potrace.exe"
-        images = []
         proc = process_images(p)
-        images += proc.images        
-
-        # unfortunately the concrete file name is nontrivial using increment counter etc, so we have to reverse-guess the last stored images by changetime
-        folder = p.outpath_samples
-
-        if opts.save_to_dirs:
-            folder = glob.glob(p.outpath_samples+"/*")
-            folder = max(folder, key=os.path.getctime)
-
-        files = glob.glob(folder+"/*."+opts.samples_format)
-
-        print ("Debug TXT2Vector: Globbing folder: " + folder+"/*."+opts.samples_format)
-
-        # latest first
-        files = sorted(files, key=os.path.getctime, reverse=True)
-  
-
-
-        assert len(files) > 0
-        assert len(files) >= len(images), "could not find generated image files. Ensure they are stored at all, best if in subdirectory"
-
         mixedImages = []
+
         try:
             # vectorize
-            for i,img in enumerate(images[::-1]): 
+            for i,img in enumerate(proc.images[::-1]): 
                 if (not hasattr(img,"already_saved_as")) : continue
-                fullfn = files[i]
+                fullfn = img.already_saved_as
                 fullfnPath = pathlib.Path(fullfn)
                 
                 fullofpnm =  fullfnPath.with_suffix('.pnm') #for vectorizing
