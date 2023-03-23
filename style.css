@@ -1,0 +1,9 @@
+.vectorstudio-iframe body {
+    overflow: hidden;
+}
+
+#vectorstudio-iframe {
+    width:100%;
+    height:100vh;
+    overflow: hidden;
+}

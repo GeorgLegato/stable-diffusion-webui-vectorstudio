@@ -51,6 +51,10 @@ import gradio as gr
 
 from modules.processing import Processed, process_images
 from modules.shared import opts
+from modules import script_callbacks, scripts, shared
+
+usefulDirs = scripts.basedir().split(os.sep)[-2:]
+iframesrc = "file="+usefulDirs[0]+"/"+usefulDirs[1]+"/scripts/editor/index.html"
 
 class Script(scripts.Script):
     def title(self):
@@ -173,3 +177,28 @@ class Script(scripts.Script):
         imgT.save(fullofTPNG)
         mixedImages.append([imgQ,"PNG-quantized"])
         mixedImages.append([imgT,"PNG-transparent"])
+
+
+
+def add_tab():
+    with gr.Blocks(analytics_enabled=False) as ui:
+        with gr.Column():
+            gr.HTML(value=f"<iframe id=\"vectorstudio-iframe\" class=\"border-2 border-gray-200\" src=\"{iframesrc}\" title='description'></iframe>")
+    return [(ui, "Vector Studio", "vector-studio")]
+
+
+
+def after_component(component, **kwargs):
+    
+    # Add our buttons after each "send to extras" button
+    if kwargs.get("elem_id") == "extras_tab":
+
+            suffix = component.parent.elem_id
+
+            if (suffix):
+               edit_svg_button = gr.Button ("Edit SVG", elem_id="sendto_svgedit_button_"+suffix)
+               edit_svg_button.click (None, [],None, _js="vectorstudio_send_gallery()" )
+ 
+
+script_callbacks.on_ui_tabs(add_tab)
+script_callbacks.on_after_component(after_component)
