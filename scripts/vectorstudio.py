@@ -39,7 +39,6 @@ import pathlib
 import subprocess
 from PIL import Image
 
-from tkinter import Image, image_types
 from zipfile import ZipFile
 import requests
 import glob
