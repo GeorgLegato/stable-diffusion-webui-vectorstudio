@@ -19,7 +19,7 @@
   display: grid;
   grid-template-rows: auto 15px 1fr 40px;
   grid-template-columns: 40px 15px 50px 1fr 15px;
-  grid-template-areas: 
+  grid-template-areas:
     "main main   main top top"
     "left corner rulerX rulerX side"
     "left rulerY workarea workarea side"
@@ -28,7 +28,7 @@
   background: var(--main-bg-color);
   font-family: Verdana, Helvetica, Arial;
   color: var(--text-color);
-  user-select: text;
+  user-select: none;
   width: 100%;
   height: 100%;
 }

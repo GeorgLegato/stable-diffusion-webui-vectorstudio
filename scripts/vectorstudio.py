@@ -54,7 +54,17 @@ from modules.shared import opts
 from modules import script_callbacks, scripts, shared
 
 usefulDirs = scripts.basedir().split(os.sep)[-2:]
-iframesrc = "file="+usefulDirs[0]+"/"+usefulDirs[1]+"/scripts/editor/index.html"
+iframesrc = "file="+usefulDirs[0]+"/"+usefulDirs[1]+"/scripts/editor/iife-index.html"
+
+def check_ext(ext):
+    found = False
+    scripts_list = scripts.list_scripts("scripts", ".py")
+    for scriptfile in scripts_list:
+            if ext in scriptfile.basedir.lower():
+                found = True
+                break
+    return found
+
 
 class Script(scripts.Script):
     def title(self):
@@ -181,7 +191,29 @@ class Script(scripts.Script):
 
 
 def add_tab():
+    haveControlnet = check_ext("controlnet")
+
     with gr.Blocks(analytics_enabled=False) as ui:
+        with gr.Row(visible=haveControlnet):
+            sendto_controlnet_txt2img = gr.Button("Send to txt2img ControlNet", visible=haveControlnet)
+            sendto_controlnet_img2img = gr.Button("Send to img2img ControlNet", visible=haveControlnet)
+            controlnet_max = opts.data.get("control_net_max_models_num", 1)
+            sendto_controlnet_num = gr.Dropdown(list(range(controlnet_max)), label="ControlNet number", value="0", interactive=True, visible=(haveControlnet and controlnet_max > 1))
+
+            sendto_controlnet_txt2img.click(
+                        fn=None,
+                        inputs=[sendto_controlnet_num],
+                        outputs=[],
+                        _js="image_browser_controlnet_send_txt2img"
+                    )
+            
+            sendto_controlnet_img2img.click(
+                fn=None,
+                inputs=[sendto_controlnet_num],
+                outputs=[],
+                _js="image_browser_controlnet_send_img2img"
+            )
+
         with gr.Column():
             gr.HTML(value=f"<iframe id=\"vectorstudio-iframe\" class=\"border-2 border-gray-200\" src=\"{iframesrc}\" title='description'></iframe>")
     return [(ui, "Vector Studio", "vector-studio")]

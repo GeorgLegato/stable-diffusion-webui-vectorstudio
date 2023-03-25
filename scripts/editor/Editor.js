@@ -30315,7 +30315,7 @@ class ConfigObj {
      */
     this.defaultConfig = {
       canvasName: 'default',
-      canvas_expansion: 3,
+      canvas_expansion: 0.5,
       initFill: {
         color: 'FF0000',
         // solid red
@@ -30345,7 +30345,7 @@ class ConfigObj {
       extPath: './extensions',
       // DOCUMENT PROPERTIES
       // Change the following to a preference (already in the Document Properties dialog)?
-      dimensions: [640, 480],
+      dimensions: [512, 512],
       // EDITOR OPTIONS
       // Change the following to preferences (already in the Editor Options dialog)?
       gridSnapping: false,
