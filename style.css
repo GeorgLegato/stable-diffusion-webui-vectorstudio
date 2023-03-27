@@ -7,3 +7,14 @@
     height:100vh;
     overflow: hidden;
 }
+
+img[src$=".svg"], img[src^="data:image/svg"] {
+/*    background: white; */
+
+background-image:
+  linear-gradient(45deg, rgba(255,255,255,.2) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.2) 75%, rgba(255,255,255,.2)),
+  linear-gradient(45deg, rgba(255,255,255,.2) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.2) 75%, rgba(255,255,255,.2));
+background-size: 20px 20px;
+background-position: 0 0, 10px 10px;
+
+}
