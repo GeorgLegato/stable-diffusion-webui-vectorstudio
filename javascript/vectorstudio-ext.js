@@ -73,64 +73,116 @@ async function image_browser_controlnet_send(toTab, controlnetNum) {
 	var svgCode = svgE.svgCanvas.getSvgString();
 	var dataUrl = "data:image/svg+xml;base64," + btoa(svgCode);
 
-    const blob = await (await fetch(dataUrl)).blob()
-    const dt = new DataTransfer()
-    dt.items.add(new File([blob], "ImageBrowser.png", { type: blob.type }))
-    const container = gradioApp().querySelector(
-        toTab === "txt2img" ? "#txt2img_script_container" : "#img2img_script_container"
-    )
-    const accordion = container.querySelector("#controlnet .transition")
-    if (accordion.classList.contains("rotate-90")) accordion.click()
+	const blob = await (await fetch(dataUrl)).blob()
+	const dt = new DataTransfer()
+	dt.items.add(new File([blob], "ImageBrowser.png", { type: blob.type }))
+	const container = gradioApp().querySelector(
+		toTab === "txt2img" ? "#txt2img_script_container" : "#img2img_script_container"
+	)
+	const accordion = container.querySelector("#controlnet .transition")
+	if (accordion.classList.contains("rotate-90")) accordion.click()
 
-    const tab = container.querySelectorAll(
-        "#controlnet > div:nth-child(2) > .tabs > .tabitem, #controlnet > div:nth-child(2) > div:not(.tabs)"
-    )[controlnetNum]
-    if (tab.classList.contains("tabitem"))
-        tab.parentElement.firstElementChild.querySelector(`:nth-child(${Number(controlnetNum) + 1})`).click()
+	const tab = container.querySelectorAll(
+		"#controlnet > div:nth-child(2) > .tabs > .tabitem, #controlnet > div:nth-child(2) > div:not(.tabs)"
+	)[controlnetNum]
+	if (tab.classList.contains("tabitem"))
+		tab.parentElement.firstElementChild.querySelector(`:nth-child(${Number(controlnetNum) + 1})`).click()
 
-    const input = tab.querySelector("input[type='file']")
-    try {
-        input.previousElementSibling.previousElementSibling.querySelector("button[aria-label='Clear']").click()
-    } catch (e) {}
+	const input = tab.querySelector("input[type='file']")
+	try {
+		input.previousElementSibling.previousElementSibling.querySelector("button[aria-label='Clear']").click()
+	} catch (e) { }
 
-    input.value = ""
-    input.files = dt.files
-    input.dispatchEvent(new Event("change", { bubbles: true, composed: true }))
+	input.value = ""
+	input.files = dt.files
+	input.dispatchEvent(new Event("change", { bubbles: true, composed: true }))
 
-    image_browser_gototab(toTab)
+	image_browser_gototab(toTab)
 }
 
 function image_browser_controlnet_send_txt2img(controlnetNum) {
-    image_browser_controlnet_send("txt2img", controlnetNum)
+	image_browser_controlnet_send("txt2img", controlnetNum)
 }
-  
+
 function image_browser_controlnet_send_img2img(controlnetNum) {
-    image_browser_controlnet_send("img2img", controlnetNum)
+	image_browser_controlnet_send("img2img", controlnetNum)
 }
 
 
-/* need to be in iframe-html
+let vs_bg_count=0
+const vs_bg_max=3
+const vs_bg_class_pre="vs_svg_bg_"
+
+function vectorstudio_cycle_svg_bg() {
+	allsvgs = gradioApp().querySelectorAll ('img[src$=".svg"], img[src^="data:image/svg"]')
+	if (allsvgs) {
+		
+		const newClass = vs_bg_class_pre+""+vs_bg_count
+		vs_bg_count += 1
+		vs_bg_count %= vs_bg_max+1
+
+	allsvgs.forEach(s => {
+		s.classList.forEach(cle => {
+			if (cle.startsWith(vs_bg_class_pre)) {
+				s.classList.remove(cle)
+			}
+		});
+		s.classList.add(newClass)
+	});
+	}	
+}
+
+
+
+
+const VS_SCRIPTLIST_NAME = "Vector Studio"
+
+/* need to be in iframe-html*/
 document.addEventListener("DOMContentLoaded", () => {
 	const onload = () => {
 		if (gradioApp) {
+			st2i = gradioApp().querySelector("#txt2img_script_container #script_list select")
+			si2i = gradioApp().querySelector("#img2img_script_container #script_list select")
+			if (st2i && si2i) {
+				const txtToolbox = gradioApp().querySelector("#txt2img_results #VectorStudio_ToolBox");
+				const imgToolbox = gradioApp().querySelector("#img2img_results #VectorStudio_ToolBox");
+				/*  display the Toolboxes (sendto etc) only when the script is selected */
+				st2i.addEventListener("change", () => {
+					txtToolbox.style.display = st2i.value == VS_SCRIPTLIST_NAME ? "flex" : "none"
+				})
+				si2i.addEventListener("change", () => {
+					imgToolbox.style.display = si2i.value == VS_SCRIPTLIST_NAME ? "flex" : "none"
+				})
 
-			vs-frame = gradioApp().querySelector("#" + VS_IFRAME_NAME).contentWindow.svgEditor
-			if (!Editor) {
-				setTimeout(onload, 10);
-				return
+				// set initial state on start
+				txtToolbox.style.display = st2i.value == VS_SCRIPTLIST_NAME ? "flex" : "none"
+				imgToolbox.style.display = si2i.value == VS_SCRIPTLIST_NAME ? "flex" : "none"
+
 			}
-			// change layout: bottom color swatches to top.
-			TOP = document.getElementById("tools_top")
-			BOTTOM = document.getElementById("tools_bottom")
-			TOP.appendChild(BOTTOM)
+			else {
+				setTimeout(onload, 3000);
+			}
 		}
+		/* later: move color panel up 
+					vsframe = gradioApp().querySelector("#" + VS_IFRAME_NAME).contentWindow.svgEditor
+					if (!Editor) {
+						setTimeout(onload, 10);
+						return
+					}
+					// change layout: bottom color swatches to top.
+					TOP = document.getElementById("tools_top")
+					BOTTOM = document.getElementById("tools_bottom")
+					TOP.appendChild(BOTTOM)
+		*/
 		else {
-			setTimeout(onload, 3);
+			setTimeout(onload, 3000);
 		}
 	};
+
 	onload();
+
 });
-*/
+
 
 
 
