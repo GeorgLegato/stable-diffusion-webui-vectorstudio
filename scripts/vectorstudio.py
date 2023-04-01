@@ -230,12 +230,12 @@ def after_component(component, **kwargs):
 
             if (suffix):
                 with gr.Accordion("Vector Studio", open=False, elem_id="VectorStudio_ToolBox", visible=False):
-                    with gr.Column():
-                        edit_svg_button = gr.Button ("Edit SVG", elem_id="sendto_svgedit_button_"+suffix)
-                        cycle_svg_bg_button  = gr.Button("Cycle BG", elem_id="svg_cycle_bg", visible=True)
-                
-                        cycle_svg_bg_button.click(None,[],None,_js="vectorstudio_cycle_svg_bg")
-                        edit_svg_button.click (None, [],None, _js="vectorstudio_send_gallery()" )
+                        with gr.Row():
+                            edit_svg_button = gr.Button ("Edit SVG", elem_id="sendto_svgedit_button_"+suffix)
+                            cycle_svg_bg_button  = gr.Button("Cycle BG", elem_id="svg_cycle_bg", visible=True)
+                    
+                            cycle_svg_bg_button.click(None,[],None,_js="vectorstudio_cycle_svg_bg")
+                            edit_svg_button.click (None, [],None, _js="vectorstudio_send_gallery()" )
 
     # get the dropdown component to depend on selected/active script.
     if kwargs.get("elem_id") == "script_list":
