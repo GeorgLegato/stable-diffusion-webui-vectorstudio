@@ -54,6 +54,7 @@ from modules import script_callbacks, scripts, shared
 
 usefulDirs = scripts.basedir().split(os.sep)[-2:]
 iframesrc = "file="+usefulDirs[0]+"/"+usefulDirs[1]+"/scripts/editor/iife-index.html"
+script_list_component = None
 
 def check_ext(ext):
     found = False
@@ -220,16 +221,28 @@ def add_tab():
 
 
 def after_component(component, **kwargs):
-    
+    global script_list_component
+
     # Add our buttons after each "send to extras" button
     if kwargs.get("elem_id") == "extras_tab":
 
             suffix = component.parent.elem_id
 
             if (suffix):
-               edit_svg_button = gr.Button ("Edit SVG", elem_id="sendto_svgedit_button_"+suffix)
-               edit_svg_button.click (None, [],None, _js="vectorstudio_send_gallery()" )
- 
+                with gr.Accordion("Vector Studio", open=False, elem_id="VectorStudio_ToolBox", visible=False):
+                        with gr.Row():
+                            edit_svg_button = gr.Button ("Edit SVG", elem_id="sendto_svgedit_button_"+suffix)
+                            cycle_svg_bg_button  = gr.Button("Cycle BG", elem_id="svg_cycle_bg", visible=True)
+                    
+                            cycle_svg_bg_button.click(None,[],None,_js="vectorstudio_cycle_svg_bg")
+                            edit_svg_button.click (None, [],None, _js="vectorstudio_send_gallery()" )
+
+    # get the dropdown component to depend on selected/active script.
+    if kwargs.get("elem_id") == "script_list":
+        script_list_component = component
+
+
+
 
 script_callbacks.on_ui_tabs(add_tab)
 script_callbacks.on_after_component(after_component)
