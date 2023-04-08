@@ -112,7 +112,7 @@ class Script(scripts.Script):
         # Add the prompt from above
         p.prompt += StyleDict[poUseColor]
 
-        PO_TO_CALL = scripts.basedir() + "\\extensions\\stable-diffusion-webui-vectorstudio\\bin\\potrace.exe"
+        PO_TO_CALL = usefulDirs[0]+"/"+usefulDirs[1]+"/bin/potrace.exe"
         proc = process_images(p)
         mixedImages = []
 
@@ -240,9 +240,6 @@ def after_component(component, **kwargs):
     # get the dropdown component to depend on selected/active script.
     if kwargs.get("elem_id") == "script_list":
         script_list_component = component
-
-
-
 
 script_callbacks.on_ui_tabs(add_tab)
 script_callbacks.on_after_component(after_component)
