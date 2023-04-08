@@ -1,5 +1,6 @@
 const VS_IFRAME_NAME = "vectorstudio-iframe"
 let svgE
+const VS_SCRIPTLIST_NAME = "Vector Studio"
 
 function vectorstudio_send_image(dataURL, name = "Embed Resource") {
 	svgE = gradioApp().querySelector("#" + VS_IFRAME_NAME).contentWindow.svgEditor
@@ -19,12 +20,10 @@ function vectorstudio_gototab(tabname = "Vector Studio", tabsId = "tabs") {
 
 
 async function vectorstudio_get_image_from_gallery() {
-	var buttons = gradioApp().querySelectorAll(
-		'[style="display: block;"].tabitem div[id$=_gallery] .gallery-item'
-	);
-	var button = gradioApp().querySelector(
-		'[style="display: block;"].tabitem div[id$=_gallery] .gallery-item.\\!ring-2'
-	);
+
+	const curGal = gradioApp().querySelector('#tabs button.selected').innerText // get_uiCurrentTab() is currently buggy
+	const buttons = gradioApp().querySelectorAll("#" + curGal + "_gallery .grid-container button")
+	let button = gradioApp().querySelector("#" + curGal + "_gallery .grid-container button.selected")
 
 	if (!button) button = buttons[0];
 
@@ -135,28 +134,27 @@ function vectorstudio_cycle_svg_bg() {
 
 
 
-const VS_SCRIPTLIST_NAME = "Vector Studio"
 
 /* need to be in iframe-html*/
 document.addEventListener("DOMContentLoaded", () => {
 	const onload = () => {
 		if (gradioApp) {
-			st2i = gradioApp().querySelector("#txt2img_script_container #script_list select")
-			si2i = gradioApp().querySelector("#img2img_script_container #script_list select")
+			st2i = gradioApp().querySelector("#txt2img_script_container #script_list span.single-select")
+			si2i = gradioApp().querySelector("#img2img_script_container #script_list span.single-select")
 			if (st2i && si2i) {
 				const txtToolbox = gradioApp().querySelector("#txt2img_results #VectorStudio_ToolBox");
 				const imgToolbox = gradioApp().querySelector("#img2img_results #VectorStudio_ToolBox");
 				/*  display the Toolboxes (sendto etc) only when the script is selected */
-				st2i.addEventListener("change", () => {
-					txtToolbox.style.display = st2i.value == VS_SCRIPTLIST_NAME ? "flex" : "none"
+				st2i.addEventListener("DOMCharacterDataModified", () => {
+					txtToolbox.style.display = st2i.innerText == VS_SCRIPTLIST_NAME ? "flex" : "none"
 				})
-				si2i.addEventListener("change", () => {
-					imgToolbox.style.display = si2i.value == VS_SCRIPTLIST_NAME ? "flex" : "none"
+				si2i.addEventListener("DOMCharacterDataModified", () => {
+					imgToolbox.style.display = si2i.innerText == VS_SCRIPTLIST_NAME ? "flex" : "none"
 				})
 
 				// set initial state on start
-				txtToolbox.style.display = st2i.value == VS_SCRIPTLIST_NAME ? "flex" : "none"
-				imgToolbox.style.display = si2i.value == VS_SCRIPTLIST_NAME ? "flex" : "none"
+				txtToolbox.style.display = st2i.innerText == VS_SCRIPTLIST_NAME ? "flex" : "none"
+				imgToolbox.style.display = si2i.innerText == VS_SCRIPTLIST_NAME ? "flex" : "none"
 
 			}
 			else {
