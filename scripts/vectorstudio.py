@@ -204,14 +204,14 @@ def add_tab():
                         fn=None,
                         inputs=[sendto_controlnet_num],
                         outputs=[],
-                        _js="image_browser_controlnet_send_txt2img"
+                        _js="vectorstudio_controlnet_send_txt2img"
                     )
             
             sendto_controlnet_img2img.click(
                 fn=None,
                 inputs=[sendto_controlnet_num],
                 outputs=[],
-                _js="image_browser_controlnet_send_img2img"
+                _js="vectorstudio_controlnet_send_img2img"
             )
 
         with gr.Column():
