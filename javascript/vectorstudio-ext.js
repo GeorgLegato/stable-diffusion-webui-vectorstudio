@@ -1,5 +1,6 @@
 const VS_IFRAME_NAME = "vectorstudio-iframe"
 let svgE
+const VS_SCRIPTLIST_NAME = "Vector Studio"
 
 function vectorstudio_send_image(dataURL, name = "Embed Resource") {
 	svgE = gradioApp().querySelector("#" + VS_IFRAME_NAME).contentWindow.svgEditor
@@ -7,7 +8,7 @@ function vectorstudio_send_image(dataURL, name = "Embed Resource") {
 }
 
 
-function vectorstudio_gototab(tabname = "Vector Studio", tabsId = "tabs") {
+function vectorstudio_gototab(tabname = "Vector Studio", tabsId = "tabs", focusElement) {
 	Array.from(
 		gradioApp().querySelectorAll(`#${tabsId} > div:first-child button`)
 	).forEach((button) => {
@@ -15,16 +16,19 @@ function vectorstudio_gototab(tabname = "Vector Studio", tabsId = "tabs") {
 			button.click();
 		}
 	});
+	if (focusElement) {
+		setTimeout(() => {
+			focusElement.scrollIntoView()			
+		}, 500);
+	}
 }
 
 
 async function vectorstudio_get_image_from_gallery() {
-	var buttons = gradioApp().querySelectorAll(
-		'[style="display: block;"].tabitem div[id$=_gallery] .gallery-item'
-	);
-	var button = gradioApp().querySelector(
-		'[style="display: block;"].tabitem div[id$=_gallery] .gallery-item.\\!ring-2'
-	);
+
+	const curGal = gradioApp().querySelector('#tabs button.selected').innerText // get_uiCurrentTab() is currently buggy
+	const buttons = gradioApp().querySelectorAll("#" + curGal + "_gallery .grid-container button")
+	let button = gradioApp().querySelector("#" + curGal + "_gallery .grid-container button.selected")
 
 	if (!button) button = buttons[0];
 
@@ -67,7 +71,7 @@ function vectorstudio_send_gallery(name = "Embed Resource") {
 	}
 }
 
-async function image_browser_controlnet_send(toTab, controlnetNum) {
+async function vectorstudio_controlnet_send(toTab, controlnetNum) {
 	svgE = gradioApp().querySelector("#" + VS_IFRAME_NAME).contentWindow.svgEditor
 
 	var svgCode = svgE.svgCanvas.getSvgString();
@@ -76,87 +80,94 @@ async function image_browser_controlnet_send(toTab, controlnetNum) {
 	const blob = await (await fetch(dataUrl)).blob()
 	const dt = new DataTransfer()
 	dt.items.add(new File([blob], "ImageBrowser.png", { type: blob.type }))
-	const container = gradioApp().querySelector(
-		toTab === "txt2img" ? "#txt2img_script_container" : "#img2img_script_container"
-	)
-	const accordion = container.querySelector("#controlnet .transition")
-	if (accordion.classList.contains("rotate-90")) accordion.click()
 
-	const tab = container.querySelectorAll(
-		"#controlnet > div:nth-child(2) > .tabs > .tabitem, #controlnet > div:nth-child(2) > div:not(.tabs)"
-	)[controlnetNum]
-	if (tab.classList.contains("tabitem"))
-		tab.parentElement.firstElementChild.querySelector(`:nth-child(${Number(controlnetNum) + 1})`).click()
+	const container = gradioApp().querySelector(toTab === "txt2img" ? "#txt2img_script_container" : "#img2img_script_container")
 
-	const input = tab.querySelector("input[type='file']")
-	try {
-		input.previousElementSibling.previousElementSibling.querySelector("button[aria-label='Clear']").click()
-	} catch (e) { }
+	const accordion = container.querySelector("#controlnet .label-wrap")
+	if (!accordion.classList.contains("open")) accordion.click()  // on first time no DOM there!
+	
+	const tab = gradioApp().querySelectorAll("#tab_"+toTab+" #controlnet .tab-nav button")[controlnetNum]
+	if (!tab) {
+		// come back after click() has created the DOM 
+		setTimeout(()=>{
+			vectorstudio_controlnet_send(toTab,controlnetNum)
+		},1000)
+		return
+	}
+
+	if (!tab.classList.contains("selected")) tab.click()
+
+	const input = gradioApp().querySelectorAll("#tab_"+toTab+" #controlnet input[type='file']")[controlnetNum]
+	/*  try {
+			a click seems not to be neccessary 
+			input.parentElement.click()
+		} catch (e) {}
+	*/
 
 	input.value = ""
 	input.files = dt.files
 	input.dispatchEvent(new Event("change", { bubbles: true, composed: true }))
 
-	image_browser_gototab(toTab)
+	// switch to txt2/img2img and scroll to controlnet-tab
+	vectorstudio_gototab(toTab, "tabs", tab)
 }
 
-function image_browser_controlnet_send_txt2img(controlnetNum) {
-	image_browser_controlnet_send("txt2img", controlnetNum)
+function vectorstudio_controlnet_send_txt2img(controlnetNum) {
+	vectorstudio_controlnet_send("txt2img", controlnetNum)
 }
 
-function image_browser_controlnet_send_img2img(controlnetNum) {
-	image_browser_controlnet_send("img2img", controlnetNum)
+function vectorstudio_controlnet_send_img2img(controlnetNum) {
+	vectorstudio_controlnet_send("img2img", controlnetNum)
 }
 
 
-let vs_bg_count=0
-const vs_bg_max=3
-const vs_bg_class_pre="vs_svg_bg_"
+let vs_bg_count = 0
+const vs_bg_max = 3
+const vs_bg_class_pre = "vs_svg_bg_"
 
 function vectorstudio_cycle_svg_bg() {
-	allsvgs = gradioApp().querySelectorAll ('img[src$=".svg"], img[src^="data:image/svg"]')
+	allsvgs = gradioApp().querySelectorAll('img[src$=".svg"], img[src^="data:image/svg"]')
 	if (allsvgs) {
-		
-		const newClass = vs_bg_class_pre+""+vs_bg_count
-		vs_bg_count += 1
-		vs_bg_count %= vs_bg_max+1
 
-	allsvgs.forEach(s => {
-		s.classList.forEach(cle => {
-			if (cle.startsWith(vs_bg_class_pre)) {
-				s.classList.remove(cle)
-			}
+		const newClass = vs_bg_class_pre + "" + vs_bg_count
+		vs_bg_count += 1
+		vs_bg_count %= vs_bg_max + 1
+
+		allsvgs.forEach(s => {
+			s.classList.forEach(cle => {
+				if (cle.startsWith(vs_bg_class_pre)) {
+					s.classList.remove(cle)
+				}
+			});
+			s.classList.add(newClass)
 		});
-		s.classList.add(newClass)
-	});
-	}	
+	}
 }
 
 
 
 
-const VS_SCRIPTLIST_NAME = "Vector Studio"
 
 /* need to be in iframe-html*/
 document.addEventListener("DOMContentLoaded", () => {
 	const onload = () => {
 		if (gradioApp) {
-			st2i = gradioApp().querySelector("#txt2img_script_container #script_list select")
-			si2i = gradioApp().querySelector("#img2img_script_container #script_list select")
+			st2i = gradioApp().querySelector("#txt2img_script_container #script_list span.single-select")
+			si2i = gradioApp().querySelector("#img2img_script_container #script_list span.single-select")
 			if (st2i && si2i) {
 				const txtToolbox = gradioApp().querySelector("#txt2img_results #VectorStudio_ToolBox");
 				const imgToolbox = gradioApp().querySelector("#img2img_results #VectorStudio_ToolBox");
 				/*  display the Toolboxes (sendto etc) only when the script is selected */
-				st2i.addEventListener("change", () => {
-					txtToolbox.style.display = st2i.value == VS_SCRIPTLIST_NAME ? "flex" : "none"
+				st2i.addEventListener("DOMCharacterDataModified", () => {
+					txtToolbox.style.display = st2i.innerText == VS_SCRIPTLIST_NAME ? "flex" : "none"
 				})
-				si2i.addEventListener("change", () => {
-					imgToolbox.style.display = si2i.value == VS_SCRIPTLIST_NAME ? "flex" : "none"
+				si2i.addEventListener("DOMCharacterDataModified", () => {
+					imgToolbox.style.display = si2i.innerText == VS_SCRIPTLIST_NAME ? "flex" : "none"
 				})
 
 				// set initial state on start
-				txtToolbox.style.display = st2i.value == VS_SCRIPTLIST_NAME ? "flex" : "none"
-				imgToolbox.style.display = si2i.value == VS_SCRIPTLIST_NAME ? "flex" : "none"
+				txtToolbox.style.display = st2i.innerText == VS_SCRIPTLIST_NAME ? "flex" : "none"
+				imgToolbox.style.display = si2i.innerText == VS_SCRIPTLIST_NAME ? "flex" : "none"
 
 			}
 			else {
