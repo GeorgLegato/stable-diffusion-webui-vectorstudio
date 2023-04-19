@@ -1,5 +1,5 @@
 * on windows copy your potrace.exe just panorama_here
 or 
 * on linux/mac (or if you are a pro on windows as well), create a softlink to your actual potrace-install:
-  ln -s /my/bin/potrace potrace.exe
+  ln -s `which potrace` potrace.exe
   
