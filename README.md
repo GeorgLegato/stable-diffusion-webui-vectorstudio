@@ -7,7 +7,7 @@ Adds  Javascript-SVG-Editor (```SVG-Edit```) as a tab to Stable-Diffusion-Webui 
 * Or start drawing in svg editor and send your sketches to Controlnet (txt/img2-img) to a particular control net instance.
 
 # Installation
-* Open Extension Tab in SD-Webui and paste this GITHUB-url from into the Extension Tab/Url.
+* Open Extension Tab in SD-Webui and paste this GITHUB-url into the "Install using Url" textbox.
 * On first run, the extension will try to find POTRACE in the bin-folder. If no executable there, it will download the POTRACE (.exe) and copy it into the bin fodler for you.
 The binary is downlkoad from sourceforge like https://potrace.sourceforge.net/#downloading
 
