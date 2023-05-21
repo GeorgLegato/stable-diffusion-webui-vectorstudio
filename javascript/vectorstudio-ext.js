@@ -18,7 +18,7 @@ function vectorstudio_gototab(tabname = "Vector Studio", tabsId = "tabs", focusE
 	});
 	if (focusElement) {
 		setTimeout(() => {
-			focusElement.scrollIntoView()			
+			focusElement.scrollIntoView()
 		}, 500);
 	}
 }
@@ -85,19 +85,19 @@ async function vectorstudio_controlnet_send(toTab, controlnetNum) {
 
 	const accordion = container.querySelector("#controlnet .label-wrap")
 	if (!accordion.classList.contains("open")) accordion.click()  // on first time no DOM there!
-	
-	const tab = gradioApp().querySelectorAll("#tab_"+toTab+" #controlnet .tab-nav button")[controlnetNum]
+
+	const tab = gradioApp().querySelectorAll("#tab_" + toTab + " #controlnet .tab-nav button")[controlnetNum]
 	if (!tab) {
 		// come back after click() has created the DOM 
-		setTimeout(()=>{
-			vectorstudio_controlnet_send(toTab,controlnetNum)
-		},1000)
+		setTimeout(() => {
+			vectorstudio_controlnet_send(toTab, controlnetNum)
+		}, 1000)
 		return
 	}
 
 	if (!tab.classList.contains("selected")) tab.click()
 
-	const input = gradioApp().querySelectorAll("#tab_"+toTab+" #controlnet input[type='file']")[controlnetNum]
+	const input = gradioApp().querySelectorAll("#tab_" + toTab + " #controlnet input[type='file']")[controlnetNum]
 	/*  try {
 			a click seems not to be neccessary 
 			input.parentElement.click()
@@ -152,41 +152,60 @@ function vectorstudio_cycle_svg_bg() {
 document.addEventListener("DOMContentLoaded", () => {
 	const onload = () => {
 		if (gradioApp) {
-			st2i = gradioApp().querySelector("#txt2img_script_container #script_list span.single-select")
-			si2i = gradioApp().querySelector("#img2img_script_container #script_list span.single-select")
-			if (st2i && si2i) {
-				const txtToolbox = gradioApp().querySelector("#txt2img_results #VectorStudio_ToolBox");
-				const imgToolbox = gradioApp().querySelector("#img2img_results #VectorStudio_ToolBox");
-				/*  display the Toolboxes (sendto etc) only when the script is selected */
-				st2i.addEventListener("DOMCharacterDataModified", () => {
-					txtToolbox.style.display = st2i.innerText == VS_SCRIPTLIST_NAME ? "flex" : "none"
-				})
-				si2i.addEventListener("DOMCharacterDataModified", () => {
-					imgToolbox.style.display = si2i.innerText == VS_SCRIPTLIST_NAME ? "flex" : "none"
-				})
 
-				// set initial state on start
-				txtToolbox.style.display = st2i.innerText == VS_SCRIPTLIST_NAME ? "flex" : "none"
-				imgToolbox.style.display = si2i.innerText == VS_SCRIPTLIST_NAME ? "flex" : "none"
+			// Select the node that will be observed for mutations
+			let targetNodeTxt = getVSScriptEntry("txt")
+			let targetNodeImg = getVSScriptEntry("img")
 
+			if (targetNodeTxt && targetNodeImg) {
+
+				// Options for the observer (which mutations to observe)
+				const config = { attributes: true, childList: false, subtree: false };
+
+				// Callback function to execute when mutations are observed
+				const callback = function (mutationsList, observer) {
+					// Look through all mutations that just occured
+					for (let mutation of mutationsList) {
+						// If the mutation was a childList mutation
+						if (mutation.type === 'attributes') {
+							const toHide = (mutation.target.classList.contains('hidden'))
+							const txtToolbox = gradioApp().querySelector("#txt2img_results #VectorStudio_ToolBox");
+							const imgToolbox = gradioApp().querySelector("#img2img_results #VectorStudio_ToolBox");
+							txtToolbox.style.display = !targetNodeTxt.classList.contains('hidden') ? "flex" : "none"
+							imgToolbox.style.display = !targetNodeImg.classList.contains('hidden') ? "flex" : "none"
+
+						}
+					}
+					observer.observe(targetNodeTxt, config);
+					observer.observe(targetNodeImg, config);
+				};
+
+				// Create an observer instance linked to the callback function
+				const observer = new MutationObserver(callback);
+
+				// Start observing the target node for configured mutations
+				observer.observe(targetNodeTxt, config);
+				observer.observe(targetNodeImg, config);
 			}
 			else {
 				setTimeout(onload, 3000);
 			}
 		}
-		/* later: move color panel up 
-					vsframe = gradioApp().querySelector("#" + VS_IFRAME_NAME).contentWindow.svgEditor
-					if (!Editor) {
-						setTimeout(onload, 10);
-						return
-					}
-					// change layout: bottom color swatches to top.
-					TOP = document.getElementById("tools_top")
-					BOTTOM = document.getElementById("tools_bottom")
-					TOP.appendChild(BOTTOM)
-		*/
 		else {
 			setTimeout(onload, 3000);
+		}
+
+		function getVSScriptEntry(pre) {
+			const q = "#"+pre+"2img_script_container"
+			if (!gradioApp().querySelector(q)) return null
+
+			let matchingDivs = Array.from(document.querySelectorAll(q+' div.gradio-group')).filter((div) => {
+				let labelWrapSpan = div.querySelector('.label-wrap span')
+				return labelWrapSpan && labelWrapSpan.textContent === VS_SCRIPTLIST_NAME
+			})
+
+			let targetNode = matchingDivs ? matchingDivs[0] : null
+			return targetNode
 		}
 	};
 
@@ -196,4 +215,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-
+/*
+st2i = gradioApp().querySelector("#txt2img_script_container")
+si2i = gradioApp().querySelector("#img2img_script_container")
+if (st2i && si2i) {
+	const txtToolbox = gradioApp().querySelector("#txt2img_results #VectorStudio_ToolBox");
+	const imgToolbox = gradioApp().querySelector("#img2img_results #VectorStudio_ToolBox");
+	//  display the Toolboxes (sendto etc) only when the script is selected 
+	st2i.addEventListener("DOMCharacterDataModified", () => {
+		txtToolbox.style.display = st2i.innerText == VS_SCRIPTLIST_NAME ? "flex" : "none"
+	})
+	si2i.addEventListener("DOMCharacterDataModified", () => {
+		imgToolbox.style.display = si2i.innerText == VS_SCRIPTLIST_NAME ? "flex" : "none"
+	})
+*/

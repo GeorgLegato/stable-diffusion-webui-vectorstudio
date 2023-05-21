@@ -35,17 +35,20 @@ StyleDict = {
 ##########################################################################
 
 import os
+import platform
+import shutil
+import tempfile
+import zipfile
+import tarfile
+import requests
+
 import pathlib
 import subprocess
-from PIL import Image
 
-from zipfile import ZipFile
 import requests
-import glob
 import os.path
 
 import modules.scripts as scripts
-import modules.images as Images
 import gradio as gr
 
 from modules.processing import Processed, process_images
@@ -105,14 +108,85 @@ class Script(scripts.Script):
 
                 return [poUseColor,poFormat, poOpaque, poTight, poKeepPnm, poThreshold, poTransPNG, poTransPNGEps,poDoVector,poTransPNGQuant]
 
+
+
+    def check_and_install_potrace(self):
+        # Get the appropriate download URL based on the OS
+        if platform.system() == 'Windows':
+            download_url = "https://potrace.sourceforge.net/download/1.16/potrace-1.16.win64.zip"
+            extension = '.zip'
+            PO_TO_CALL = usefulDirs[0]+"/"+usefulDirs[1]+"/bin/potrace.exe"
+        elif platform.system() == 'Linux':
+            download_url = "https://potrace.sourceforge.net/download/1.16/potrace-1.16.linux-x86_64.tar.gz"
+            extension = '.tar.gz'
+            PO_TO_CALL = usefulDirs[0]+"/"+usefulDirs[1]+"/bin/potrace"
+        elif platform.system() == 'Darwin':
+            download_url = "https://potrace.sourceforge.net/download/1.16/potrace-1.16.mac-x86_64.tar.gz"
+            extension = '.tar.gz'
+            PO_TO_CALL = usefulDirs[0]+"/"+usefulDirs[1]+"/bin/potrace"
+        else:
+            raise ValueError("Unsupported operating system.")
+
+        # Check if the PO_TO_CALL executable exists
+        if not os.path.exists(PO_TO_CALL):
+
+            print ("VectorStudio-Extension: Cannot find any POTRACE-executable in this installation.")
+            print (f"VectorStudio-Extension: downloading from {download_url}... ")
+
+            # Download the appropriate package
+            response = requests.get(download_url)
+            if response.status_code != 200:
+                raise Exception("Failed to download Potrace package.")
+
+            # Create a temporary directory to extract the package
+            temp_dir = tempfile.mkdtemp()
+
+            print (f"VectorStudio-Extension: extracting POTRACE executable... ")
+
+            try:
+                # Save the downloaded package to a temporary file
+                temp_file = os.path.join(temp_dir, f"potrace_package{extension}")
+                with open(temp_file, 'wb') as file:
+                    file.write(response.content)
+
+                # Extract the package based on the file extension
+                if extension == '.zip':
+                    with zipfile.ZipFile(temp_file, 'r') as zip_ref:
+                        zip_ref.extractall(temp_dir)
+                elif extension == '.tar.gz':
+                    with tarfile.open(temp_file, 'r:gz') as tar_ref:
+                        tar_ref.extractall(temp_dir)
+
+                # Find the potrace executable file
+                executable = None
+                for root, dirs, files in os.walk(temp_dir):
+                    for file in files:
+                        if file.startswith('potrace') and (file.endswith('.exe') or file.endswith('')):
+                            executable = os.path.join(root, file)
+                            break
+
+                if executable is None:
+                    raise Exception("Failed to find the potrace executable in the downloaded package.")
+
+                # Move the potrace executable to the specified bin folder
+                shutil.move(executable, PO_TO_CALL)
+                print (f"VectorStudio-Extension: POTRACE executable successfully installed. ")
+
+            finally:
+                # Clean up the temporary directory
+                shutil.rmtree(temp_dir)
+        return PO_TO_CALL
+
+
     def run(self, p, poUseColor, poFormat, poOpaque, poTight, poKeepPnm, poThreshold, poTransPNG, poTransPNGEps,poDoVector, poTransPNGQuant):
 
         p.do_not_save_grid = True
 
         # Add the prompt from above
         p.prompt += StyleDict[poUseColor]
+        
+        PO_TO_CALL= self.check_and_install_potrace()
 
-        PO_TO_CALL = usefulDirs[0]+"/"+usefulDirs[1]+"/bin/potrace.exe"
         proc = process_images(p)
         mixedImages = []
 
