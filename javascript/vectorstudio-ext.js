@@ -122,7 +122,7 @@ function vectorstudio_controlnet_send_img2img(controlnetNum) {
 
 
 let vs_bg_count = 0
-const vs_bg_max = 3
+const vs_bg_max = 4 // referring to styles.css
 const vs_bg_class_pre = "vs_svg_bg_"
 
 function vectorstudio_cycle_svg_bg() {
