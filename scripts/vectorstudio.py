@@ -56,7 +56,8 @@ from modules.shared import opts
 from modules import script_callbacks, scripts, shared
 
 usefulDirs = scripts.basedir().split(os.sep)[-2:]
-iframesrc = "file="+usefulDirs[0]+"/"+usefulDirs[1]+"/scripts/editor/iife-index.html"
+iframesrc        = "file="+usefulDirs[0]+"/"+usefulDirs[1]+"/scripts/editor/iife-index.html"
+iframesrcSVGCODE = "file="+usefulDirs[0]+"/"+usefulDirs[1]+"/scripts/svgcode/index.html"
 script_list_component = None
 
 def check_ext(ext):
@@ -214,7 +215,7 @@ class Script(scripts.Script):
                     self.doVector(poFormat, poOpaque, poTight, poKeepPnm, poThreshold, PO_TO_CALL, img, fullofpnm, fullof, mixedImages)
 
         except (Exception):
-            raise Exception("TXT2Vectorgraphics: Execution of Potrace failed, check filesystem, permissions, installation or settings (is image saving on?)")
+            raise Exception("VectorStudio: Execution of Potrace failed, check filesystem, permissions, installation or settings (is image saving on?)")
 
         return Processed(p, mixedImages, p.seed, proc.info)
 
@@ -290,8 +291,14 @@ def add_tab():
 
         with gr.Column():
             gr.HTML(value=f"<iframe id=\"vectorstudio-iframe\" class=\"border-2 border-gray-200\" src=\"{iframesrc}\" title='description'></iframe>")
-    return [(ui, "Vector Studio", "vector-studio")]
 
+    with gr.Blocks(analytics_enabled=False) as ui_svgcode:
+
+        with gr.Column():
+            gr.HTML(value=f"<iframe id=\"svgcode-iframe\" class=\"border-2 border-gray-200\" src=\"{iframesrcSVGCODE}\" title='description'></iframe>")
+
+
+    return [(ui, "Vector Studio", "vector-studio"), (ui_svgcode,"VS-SVGCode","svgcode")]
 
 
 def after_component(component, **kwargs):
