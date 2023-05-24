@@ -71,6 +71,45 @@ function vectorstudio_send_gallery(name = "Embed Resource") {
 	}
 }
 
+function vectorstudio_send_gallery_svgcode(name = "Embed Resource") {
+	return async () => {
+		vectorstudio_get_image_from_gallery()
+			.then(async (dataURL) => {
+				// Send to panorama-viewer
+				console.info("[vectorstudio] Using URL: " + dataURL)
+				// copy the image data URL to the clipboard
+				try {
+
+					navigator.clipboard.writeText(dataURL);
+					console.log('Image data URL copied to clipboard');
+					vectorstudio_gototab("VS-SVGCode");
+	
+					// Access the iframe
+					const iframe = document.getElementById("svgcode-iframe");
+					const iframeWindow = iframe.contentWindow || iframe.contentDocument.defaultView;
+					iframeWindow.focus();
+					
+					let i = iframeWindow.document.querySelector("img.input-image")
+					i.src=dataURL;
+
+					/* Click the button inside the iframe
+					const iframeButton = iframeWindow.document.querySelector("button.paste.menu");
+					if (iframeButton) {
+						iframeButton.click();
+					} else {
+						console.log('The button was not found within the iframe');
+					}
+					*/
+				} catch (err) {
+					console.error('Failed to copy image data URL: ', err);
+				}
+			})
+			.catch ((error) => {
+		console.warn("[vectorstudio] No SVG selected.");
+	});
+}
+}
+
 async function vectorstudio_controlnet_send(toTab, controlnetNum) {
 	svgE = gradioApp().querySelector("#" + VS_IFRAME_NAME).contentWindow.svgEditor
 
@@ -196,10 +235,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 
 		function getVSScriptEntry(pre) {
-			const q = "#"+pre+"2img_script_container"
+			const q = "#" + pre + "2img_script_container"
 			if (!gradioApp().querySelector(q)) return null
 
-			let matchingDivs = Array.from(document.querySelectorAll(q+' div.gradio-group')).filter((div) => {
+			let matchingDivs = Array.from(document.querySelectorAll(q + ' div.gradio-group')).filter((div) => {
 				let labelWrapSpan = div.querySelector('.label-wrap span')
 				return labelWrapSpan && labelWrapSpan.textContent === VS_SCRIPTLIST_NAME
 			})
