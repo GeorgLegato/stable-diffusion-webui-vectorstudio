@@ -1,7 +1,9 @@
 # stable-diffusion-webui-vectorstudio
 
 ## Purpose
-Adds  Javascript-SVG-Editor (```SVG-Edit```) as a tab to Stable-Diffusion-Webui Automatic 1111.
+* Adds Javascript-SVG-Editor (```SVG-Edit```) as a tab to Stable-Diffusion-Webui Automatic 1111.
+* Adds an interactive vectorizer (monochrome and color: ``` "SVGCode" ``` as a further tab
+* Adds postprocessing using ``` POTRACE ``` - executable to mass convert you prompts from png to svg.
 
 * You can either generate txt2vectorgraphics and finish/edit them in this svg editor
 * Or start drawing in svg editor and send your sketches to Controlnet (txt/img2-img) to a particular control net instance.
@@ -9,7 +11,7 @@ Adds  Javascript-SVG-Editor (```SVG-Edit```) as a tab to Stable-Diffusion-Webui 
 # Installation
 * Open Extension Tab in SD-Webui and paste this GITHUB-url into the "Install using Url" textbox.
 * On first run, the extension will try to find POTRACE in the bin-folder. If no executable there, it will download the POTRACE (.exe) and copy it into the bin fodler for you.
-The binary is downlkoad from sourceforge like https://potrace.sourceforge.net/#downloading
+The binary is downloaded from sourceforge like https://potrace.sourceforge.net/#downloading
 
 ---
 ## How it works
@@ -27,6 +29,8 @@ coffe mug in shape of a heart | <img src="https://user-images.githubusercontent.
 
 
 ### Screenshot
+![image](https://github.com/GeorgLegato/stable-diffusion-webui-vectorstudio/assets/7210708/81c575a6-cc17-4551-ad60-066e60e74dd3)
+![image](https://github.com/GeorgLegato/stable-diffusion-webui-vectorstudio/assets/7210708/1bbbef36-71a8-44e7-8e4f-4c823b36f463)
 ![image](https://user-images.githubusercontent.com/7210708/221387609-37ca2c3c-3da5-42aa-ad0f-8491c5f862f7.png)
 ![image](https://user-images.githubusercontent.com/7210708/221387629-1666d116-7213-41af-8b6f-a9ace3fc6083.png)
 
