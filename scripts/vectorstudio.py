@@ -269,36 +269,36 @@ def add_tab():
     haveControlnet = check_ext("controlnet")
 
     with gr.Blocks(analytics_enabled=False) as ui:
-        with gr.Row(visible=haveControlnet):
-            sendto_controlnet_txt2img = gr.Button("Send to txt2img ControlNet", visible=haveControlnet)
-            sendto_controlnet_img2img = gr.Button("Send to img2img ControlNet", visible=haveControlnet)
-            controlnet_max = opts.data.get("control_net_max_models_num", 1)
-            sendto_controlnet_num = gr.Dropdown(list(range(controlnet_max)), label="ControlNet number", value="0", interactive=True, visible=(haveControlnet and controlnet_max > 1))
 
-            sendto_controlnet_txt2img.click(
-                        fn=None,
-                        inputs=[sendto_controlnet_num],
-                        outputs=[],
-                        _js="vectorstudio_controlnet_send_txt2img"
-                    )
-            
-            sendto_controlnet_img2img.click(
-                fn=None,
-                inputs=[sendto_controlnet_num],
-                outputs=[],
-                _js="vectorstudio_controlnet_send_img2img"
-            )
+        with gr.Tab("Finetune PNG", elem_id="VS_FinetuneTab"):
+            with gr.Column():
+                gr.HTML(value=f"<iframe id=\"svgcode-iframe\" class=\"border-2 border-gray-200\" src=\"{iframesrcSVGCODE}\" title='description'></iframe>")
 
-        with gr.Column():
-            gr.HTML(value=f"<iframe id=\"vectorstudio-iframe\" class=\"border-2 border-gray-200\" src=\"{iframesrc}\" title='description'></iframe>")
+        with gr.Tab("Edit SVG", elem_id="VS_EditSVGTab"):
+            with gr.Row(visible=haveControlnet):
+                sendto_controlnet_txt2img = gr.Button("Send to txt2img ControlNet", visible=haveControlnet)
+                sendto_controlnet_img2img = gr.Button("Send to img2img ControlNet", visible=haveControlnet)
+                controlnet_max = opts.data.get("control_net_max_models_num", 1)
+                sendto_controlnet_num = gr.Dropdown(list(range(controlnet_max)), label="ControlNet number", value="0", interactive=True, visible=(haveControlnet and controlnet_max > 1))
 
-    with gr.Blocks(analytics_enabled=False) as ui_svgcode:
+                sendto_controlnet_txt2img.click(
+                            fn=None,
+                            inputs=[sendto_controlnet_num],
+                            outputs=[],
+                            _js="vectorstudio_controlnet_send_txt2img"
+                        )
+                
+                sendto_controlnet_img2img.click(
+                    fn=None,
+                    inputs=[sendto_controlnet_num],
+                    outputs=[],
+                    _js="vectorstudio_controlnet_send_img2img"
+                )
 
-        with gr.Column():
-            gr.HTML(value=f"<iframe id=\"svgcode-iframe\" class=\"border-2 border-gray-200\" src=\"{iframesrcSVGCODE}\" title='description'></iframe>")
+            with gr.Column():
+                gr.HTML(value=f"<iframe id=\"vectorstudio-iframe\" class=\"border-2 border-gray-200\" src=\"{iframesrc}\" title='description'></iframe>")
 
-
-    return [(ui, "Vector Studio", "vector-studio"), (ui_svgcode,"VS-SVGCode","svgcode")]
+    return [(ui, "Vector Studio", "vector-studio")]
 
 
 def after_component(component, **kwargs):
