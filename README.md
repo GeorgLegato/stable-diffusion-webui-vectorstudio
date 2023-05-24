@@ -1,6 +1,6 @@
 # stable-diffusion-webui-vectorstudio
 
-## Beta-Phase
+## Latest change
 Adds  Javascript-SVG-Editor (```SVG-Edit```) as a tab to Stable-Diffusion-Webui Automatic 1111.
 
 * You can either generate txt2vectorgraphics and finish/edit them in this svg editor
