@@ -56,7 +56,8 @@ from modules.shared import opts
 from modules import script_callbacks, scripts, shared
 
 usefulDirs = scripts.basedir().split(os.sep)[-2:]
-iframesrc = "file="+usefulDirs[0]+"/"+usefulDirs[1]+"/scripts/editor/iife-index.html"
+iframesrc        = "file="+usefulDirs[0]+"/"+usefulDirs[1]+"/scripts/editor/iife-index.html"
+iframesrcSVGCODE = "file="+usefulDirs[0]+"/"+usefulDirs[1]+"/scripts/svgcode/index.html"
 script_list_component = None
 
 def check_ext(ext):
@@ -214,7 +215,7 @@ class Script(scripts.Script):
                     self.doVector(poFormat, poOpaque, poTight, poKeepPnm, poThreshold, PO_TO_CALL, img, fullofpnm, fullof, mixedImages)
 
         except (Exception):
-            raise Exception("TXT2Vectorgraphics: Execution of Potrace failed, check filesystem, permissions, installation or settings (is image saving on?)")
+            raise Exception("VectorStudio: Execution of Potrace failed, check filesystem, permissions, installation or settings (is image saving on?)")
 
         return Processed(p, mixedImages, p.seed, proc.info)
 
@@ -268,30 +269,36 @@ def add_tab():
     haveControlnet = check_ext("controlnet")
 
     with gr.Blocks(analytics_enabled=False) as ui:
-        with gr.Row(visible=haveControlnet):
-            sendto_controlnet_txt2img = gr.Button("Send to txt2img ControlNet", visible=haveControlnet)
-            sendto_controlnet_img2img = gr.Button("Send to img2img ControlNet", visible=haveControlnet)
-            controlnet_max = opts.data.get("control_net_max_models_num", 1)
-            sendto_controlnet_num = gr.Dropdown(list(range(controlnet_max)), label="ControlNet number", value="0", interactive=True, visible=(haveControlnet and controlnet_max > 1))
 
-            sendto_controlnet_txt2img.click(
-                        fn=None,
-                        inputs=[sendto_controlnet_num],
-                        outputs=[],
-                        _js="vectorstudio_controlnet_send_txt2img"
-                    )
-            
-            sendto_controlnet_img2img.click(
-                fn=None,
-                inputs=[sendto_controlnet_num],
-                outputs=[],
-                _js="vectorstudio_controlnet_send_img2img"
-            )
+        with gr.Tab("Finetune PNG", elem_id="VS_FinetuneTab"):
+            with gr.Column():
+                gr.HTML(value=f"<iframe id=\"svgcode-iframe\" class=\"border-2 border-gray-200\" src=\"{iframesrcSVGCODE}\" title='description'></iframe>")
 
-        with gr.Column():
-            gr.HTML(value=f"<iframe id=\"vectorstudio-iframe\" class=\"border-2 border-gray-200\" src=\"{iframesrc}\" title='description'></iframe>")
+        with gr.Tab("Edit SVG", elem_id="VS_EditSVGTab"):
+            with gr.Row(visible=haveControlnet):
+                sendto_controlnet_txt2img = gr.Button("Send to txt2img ControlNet", visible=haveControlnet)
+                sendto_controlnet_img2img = gr.Button("Send to img2img ControlNet", visible=haveControlnet)
+                controlnet_max = opts.data.get("control_net_max_models_num", 1)
+                sendto_controlnet_num = gr.Dropdown(list(range(controlnet_max)), label="ControlNet number", value="0", interactive=True, visible=(haveControlnet and controlnet_max > 1))
+
+                sendto_controlnet_txt2img.click(
+                            fn=None,
+                            inputs=[sendto_controlnet_num],
+                            outputs=[],
+                            _js="vectorstudio_controlnet_send_txt2img"
+                        )
+                
+                sendto_controlnet_img2img.click(
+                    fn=None,
+                    inputs=[sendto_controlnet_num],
+                    outputs=[],
+                    _js="vectorstudio_controlnet_send_img2img"
+                )
+
+            with gr.Column():
+                gr.HTML(value=f"<iframe id=\"vectorstudio-iframe\" class=\"border-2 border-gray-200\" src=\"{iframesrc}\" title='description'></iframe>")
+
     return [(ui, "Vector Studio", "vector-studio")]
-
 
 
 def after_component(component, **kwargs):
@@ -306,10 +313,12 @@ def after_component(component, **kwargs):
                 with gr.Accordion("Vector Studio", open=False, elem_id="VectorStudio_ToolBox", visible=False):
                         with gr.Row():
                             edit_svg_button = gr.Button ("Edit SVG", elem_id="sendto_svgedit_button_"+suffix)
+                            svgcode_button =  gr.Button ("Finetune PNG", elem_id="sendto_svgcode_button_"+suffix)
                             cycle_svg_bg_button  = gr.Button("Cycle BG", elem_id="svg_cycle_bg", visible=True)
                     
                             cycle_svg_bg_button.click(None,[],None,_js="vectorstudio_cycle_svg_bg")
                             edit_svg_button.click (None, [],None, _js="vectorstudio_send_gallery()" )
+                            svgcode_button.click (None, [],None, _js="vectorstudio_send_gallery_svgcode()" )
 
     # get the dropdown component to depend on selected/active script.
     if kwargs.get("elem_id") == "script_list":

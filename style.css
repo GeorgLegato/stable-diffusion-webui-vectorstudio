@@ -2,7 +2,7 @@
   overflow: hidden;
 }
 
-#vectorstudio-iframe {
+#vectorstudio-iframe, #svgcode-iframe {
   width: 100%;
   height: 100vh;
   overflow: hidden;
@@ -13,7 +13,6 @@ img[src$=".svg"], img[src^="data:image/svg"] {
   fill: currentColor;
   filter: invert(1);  
 }
-
 
   .vs_svg_bg_0 {
     background: none !important;
