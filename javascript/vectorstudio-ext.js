@@ -152,22 +152,45 @@ function vectorstudio_cycle_svg_bg() {
 document.addEventListener("DOMContentLoaded", () => {
 	const onload = () => {
 		if (gradioApp) {
-			st2i = gradioApp().querySelector("#txt2img_script_container #script_list span.single-select")
-			si2i = gradioApp().querySelector("#img2img_script_container #script_list span.single-select")
-			if (st2i && si2i) {
+			txtg = gradioApp().querySelector("#txt2img_script_container")
+			imgg = gradioApp().querySelector("#img2img_script_container")
+
+			if (txtg && imgg) {
 				const txtToolbox = gradioApp().querySelector("#txt2img_results #VectorStudio_ToolBox");
 				const imgToolbox = gradioApp().querySelector("#img2img_results #VectorStudio_ToolBox");
 				/*  display the Toolboxes (sendto etc) only when the script is selected */
-				st2i.addEventListener("DOMCharacterDataModified", () => {
-					txtToolbox.style.display = st2i.innerText == VS_SCRIPTLIST_NAME ? "flex" : "none"
+
+				// Options for the observer (which mutations to observe)
+				const config = { attributes: true, childList: false, subtree: true };
+				
+				const callback = (mutationList, observer) => {
+					for (const mutation of mutationList) {
+					  if (mutation.type === "attributes") {
+						console.log(`The ${mutation.attributeName} attribute was modified.`);
+					  }
+					}
+				  };
+				  
+				  // Create an observer instance linked to the callback function
+				  const observer = new MutationObserver(callback);
+				  
+				  // Start observing the target node for configured mutations
+				  observer.observe(targetNode, config);
+
+
+
+				txtg.addEventListener("DOMCharacterDataModified", () => {
+					txtgals = gradioApp().querySelectorAll("#txt2img_gallery  button > div.caption-label")
+					if (txtgals) txtToolbox.style.display =  txtgals.length > 0 ? "flex" : "none"
 				})
-				si2i.addEventListener("DOMCharacterDataModified", () => {
-					imgToolbox.style.display = si2i.innerText == VS_SCRIPTLIST_NAME ? "flex" : "none"
+				imgg.addEventListener("DOMCharacterDataModified", () => {
+					imggals = gradioApp().querySelectorAll("#txt2img_gallery  button > div.caption-label")
+					if (imggals) imgToolbox.style.display =  imggals.length > 0 ? "flex" : "none"
 				})
 
 				// set initial state on start
-				txtToolbox.style.display = st2i.innerText == VS_SCRIPTLIST_NAME ? "flex" : "none"
-				imgToolbox.style.display = si2i.innerText == VS_SCRIPTLIST_NAME ? "flex" : "none"
+				txtToolbox.style.display =  "none"
+				imgToolbox.style.display =  "none"
 
 			}
 			else {
