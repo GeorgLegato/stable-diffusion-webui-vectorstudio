@@ -8,7 +8,7 @@ function vectorstudio_send_image(dataURL, name = "Embed Resource") {
 }
 
 
-function vectorstudio_gototab(tabname = "Vector Studio", tabsId = "tabs", focusElement) {
+function vectorstudio_gototab(subTabIndex, tabname = "Vector Studio", tabsId = "tabs", focusElement=null) {
 	Array.from(
 		gradioApp().querySelectorAll(`#${tabsId} > div:first-child button`)
 	).forEach((button) => {
@@ -16,9 +16,17 @@ function vectorstudio_gototab(tabname = "Vector Studio", tabsId = "tabs", focusE
 			button.click();
 		}
 	});
+
+	if (subTabIndex !== null) {
+		subTabButts = gradioApp().querySelectorAll("#tab_vector-studio div.tab-nav > button")
+		if (subTabButts) {
+			subTabButts[subTabIndex].click()
+		}
+	}
+
 	if (focusElement) {
 		setTimeout(() => {
-			focusElement.scrollIntoView()			
+			focusElement.scrollIntoView()
 		}, 500);
 	}
 }
@@ -61,9 +69,48 @@ function vectorstudio_send_gallery(name = "Embed Resource") {
 				// Send to panorama-viewer
 				console.info("[vectorstudio] Using URL: " + dataURL)
 				// Change Tab
-				vectorstudio_gototab();
+				vectorstudio_gototab(1);
 				vectorstudio_send_image(dataURL, name);
 
+			})
+			.catch((error) => {
+				console.warn("[vectorstudio] No SVG selected.");
+			});
+	}
+}
+
+function vectorstudio_send_gallery_svgcode(name = "Embed Resource") {
+	return async () => {
+		vectorstudio_get_image_from_gallery()
+			.then(async (dataURL) => {
+				// Send to panorama-viewer
+				console.info("[vectorstudio] Using URL: " + dataURL)
+				// copy the image data URL to the clipboard
+				try {
+
+					navigator.clipboard.writeText(dataURL);
+					console.log('Image data URL copied to clipboard');
+					vectorstudio_gototab(0);
+
+					// Access the iframe
+					const iframe = document.getElementById("svgcode-iframe");
+					const iframeWindow = iframe.contentWindow || iframe.contentDocument.defaultView;
+					iframeWindow.focus();
+
+					let i = iframeWindow.document.querySelector("img.input-image")
+					i.src = dataURL;
+
+					/* Click the button inside the iframe
+					const iframeButton = iframeWindow.document.querySelector("button.paste.menu");
+					if (iframeButton) {
+						iframeButton.click();
+					} else {
+						console.log('The button was not found within the iframe');
+					}
+					*/
+				} catch (err) {
+					console.error('Failed to copy image data URL: ', err);
+				}
 			})
 			.catch((error) => {
 				console.warn("[vectorstudio] No SVG selected.");
@@ -85,19 +132,19 @@ async function vectorstudio_controlnet_send(toTab, controlnetNum) {
 
 	const accordion = container.querySelector("#controlnet .label-wrap")
 	if (!accordion.classList.contains("open")) accordion.click()  // on first time no DOM there!
-	
-	const tab = gradioApp().querySelectorAll("#tab_"+toTab+" #controlnet .tab-nav button")[controlnetNum]
+
+	const tab = gradioApp().querySelectorAll("#tab_" + toTab + " #controlnet .tab-nav button")[controlnetNum]
 	if (!tab) {
 		// come back after click() has created the DOM 
-		setTimeout(()=>{
-			vectorstudio_controlnet_send(toTab,controlnetNum)
-		},1000)
+		setTimeout(() => {
+			vectorstudio_controlnet_send(toTab, controlnetNum)
+		}, 1000)
 		return
 	}
 
 	if (!tab.classList.contains("selected")) tab.click()
 
-	const input = gradioApp().querySelectorAll("#tab_"+toTab+" #controlnet input[type='file']")[controlnetNum]
+	const input = gradioApp().querySelectorAll("#tab_" + toTab + " #controlnet input[type='file']")[controlnetNum]
 	/*  try {
 			a click seems not to be neccessary 
 			input.parentElement.click()
@@ -109,7 +156,7 @@ async function vectorstudio_controlnet_send(toTab, controlnetNum) {
 	input.dispatchEvent(new Event("change", { bubbles: true, composed: true }))
 
 	// switch to txt2/img2img and scroll to controlnet-tab
-	vectorstudio_gototab(toTab, "tabs", tab)
+	vectorstudio_gototab(null,toTab, "tabs", tab)
 }
 
 function vectorstudio_controlnet_send_txt2img(controlnetNum) {
@@ -122,7 +169,7 @@ function vectorstudio_controlnet_send_img2img(controlnetNum) {
 
 
 let vs_bg_count = 0
-const vs_bg_max = 3
+const vs_bg_max = 4 // referring to styles.css
 const vs_bg_class_pre = "vs_svg_bg_"
 
 function vectorstudio_cycle_svg_bg() {
@@ -152,64 +199,60 @@ function vectorstudio_cycle_svg_bg() {
 document.addEventListener("DOMContentLoaded", () => {
 	const onload = () => {
 		if (gradioApp) {
-			txtg = gradioApp().querySelector("#txt2img_script_container")
-			imgg = gradioApp().querySelector("#img2img_script_container")
 
-			if (txtg && imgg) {
-				const txtToolbox = gradioApp().querySelector("#txt2img_results #VectorStudio_ToolBox");
-				const imgToolbox = gradioApp().querySelector("#img2img_results #VectorStudio_ToolBox");
-				/*  display the Toolboxes (sendto etc) only when the script is selected */
+			// Select the node that will be observed for mutations
+			let targetNodeTxt = getVSScriptEntry("txt")
+			let targetNodeImg = getVSScriptEntry("img")
+
+			if (targetNodeTxt && targetNodeImg) {
 
 				// Options for the observer (which mutations to observe)
-				const config = { attributes: true, childList: false, subtree: true };
-				
-				const callback = (mutationList, observer) => {
-					for (const mutation of mutationList) {
-					  if (mutation.type === "attributes") {
-						console.log(`The ${mutation.attributeName} attribute was modified.`);
-					  }
+				const config = { attributes: true, childList: false, subtree: false };
+
+				// Callback function to execute when mutations are observed
+				const callback = function (mutationsList, observer) {
+					// Look through all mutations that just occured
+					for (let mutation of mutationsList) {
+						// If the mutation was a childList mutation
+						if (mutation.type === 'attributes') {
+							const toHide = (mutation.target.classList.contains('hidden'))
+							const txtToolbox = gradioApp().querySelector("#txt2img_results #VectorStudio_ToolBox");
+							const imgToolbox = gradioApp().querySelector("#img2img_results #VectorStudio_ToolBox");
+							txtToolbox.style.display = !targetNodeTxt.classList.contains('hidden') ? "flex" : "none"
+							imgToolbox.style.display = !targetNodeImg.classList.contains('hidden') ? "flex" : "none"
+
+						}
 					}
-				  };
-				  
-				  // Create an observer instance linked to the callback function
-				  const observer = new MutationObserver(callback);
-				  
-				  // Start observing the target node for configured mutations
-				  observer.observe(targetNode, config);
+					observer.observe(targetNodeTxt, config);
+					observer.observe(targetNodeImg, config);
+				};
 
+				// Create an observer instance linked to the callback function
+				const observer = new MutationObserver(callback);
 
-
-				txtg.addEventListener("DOMCharacterDataModified", () => {
-					txtgals = gradioApp().querySelectorAll("#txt2img_gallery  button > div.caption-label")
-					if (txtgals) txtToolbox.style.display =  txtgals.length > 0 ? "flex" : "none"
-				})
-				imgg.addEventListener("DOMCharacterDataModified", () => {
-					imggals = gradioApp().querySelectorAll("#txt2img_gallery  button > div.caption-label")
-					if (imggals) imgToolbox.style.display =  imggals.length > 0 ? "flex" : "none"
-				})
-
-				// set initial state on start
-				txtToolbox.style.display =  "none"
-				imgToolbox.style.display =  "none"
-
+				// Start observing the target node for configured mutations
+				observer.observe(targetNodeTxt, config);
+				observer.observe(targetNodeImg, config);
 			}
 			else {
 				setTimeout(onload, 3000);
 			}
 		}
-		/* later: move color panel up 
-					vsframe = gradioApp().querySelector("#" + VS_IFRAME_NAME).contentWindow.svgEditor
-					if (!Editor) {
-						setTimeout(onload, 10);
-						return
-					}
-					// change layout: bottom color swatches to top.
-					TOP = document.getElementById("tools_top")
-					BOTTOM = document.getElementById("tools_bottom")
-					TOP.appendChild(BOTTOM)
-		*/
 		else {
 			setTimeout(onload, 3000);
+		}
+
+		function getVSScriptEntry(pre) {
+			const q = "#" + pre + "2img_script_container"
+			if (!gradioApp().querySelector(q)) return null
+
+			let matchingDivs = Array.from(document.querySelectorAll(q + ' div.gradio-group')).filter((div) => {
+				let labelWrapSpan = div.querySelector('.label-wrap span')
+				return labelWrapSpan && labelWrapSpan.textContent === VS_SCRIPTLIST_NAME
+			})
+
+			let targetNode = matchingDivs ? matchingDivs[0] : null
+			return targetNode
 		}
 	};
 
@@ -219,4 +262,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-
+/*
+st2i = gradioApp().querySelector("#txt2img_script_container")
+si2i = gradioApp().querySelector("#img2img_script_container")
+if (st2i && si2i) {
+	const txtToolbox = gradioApp().querySelector("#txt2img_results #VectorStudio_ToolBox");
+	const imgToolbox = gradioApp().querySelector("#img2img_results #VectorStudio_ToolBox");
+	//  display the Toolboxes (sendto etc) only when the script is selected 
+	st2i.addEventListener("DOMCharacterDataModified", () => {
+		txtToolbox.style.display = st2i.innerText == VS_SCRIPTLIST_NAME ? "flex" : "none"
+	})
+	si2i.addEventListener("DOMCharacterDataModified", () => {
+		imgToolbox.style.display = si2i.innerText == VS_SCRIPTLIST_NAME ? "flex" : "none"
+	})
+*/

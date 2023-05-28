@@ -2,30 +2,42 @@
   overflow: hidden;
 }
 
-#vectorstudio-iframe {
+#vectorstudio-iframe, #svgcode-iframe {
   width: 100%;
   height: 100vh;
   overflow: hidden;
 }
 
-/*img[src$=".svg"], img[src^="data:image/svg"] {*/
-.vs_svg_bg_0 {
-    background: none;
+img[src$=".svg"], img[src^="data:image/svg"] {
+  background: currentColor;
+  fill: currentColor;
+  filter: invert(1);  
+}
+
+  .vs_svg_bg_0 {
+    background: none !important;
 }
 
 .vs_svg_bg_1 {
-  background: white;
+  background: white !important;
 }
 
 .vs_svg_bg_2 {
-  background: black;
+  background: black !important;
 }
 
 .vs_svg_bg_3 {
   background-image:
     linear-gradient(45deg, rgba(255, 255, 255, .2) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, .2) 75%, rgba(255, 255, 255, .2)),
-    linear-gradient(45deg, rgba(255, 255, 255, .2) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, .2) 75%, rgba(255, 255, 255, .2));
-  background-size: 20px 20px;
-  background-position: 0 0, 10px 10px;
+    linear-gradient(45deg, rgba(255, 255, 255, .2) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, .2) 75%, rgba(255, 255, 255, .2))
+    !important;
+  background-size: 20px 20px !important;
+  background-position: 0 0, 10px 10px !important;
 
+}
+
+.vs_svg_bg_4 {
+  background: currentColor !important; 
+  fill: currentColor !important;
+  filter: invert(1) !important;  
 }

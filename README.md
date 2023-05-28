@@ -1,23 +1,19 @@
 # stable-diffusion-webui-vectorstudio
 
-## Beta-Phase
-Adds  Javascript-SVG-Editor (```SVG-Edit```) as a tab to Stable-Diffusion-Webui Automatic 1111.
+## Purpose
+* Adds Javascript-SVG-Editor (```SVG-Edit```) as a tab to Stable-Diffusion-Webui Automatic 1111.
+* Adds an interactive vectorizer (monochrome and color: ``` "SVGCode" ``` as a further tab
+* Adds postprocessing using ``` POTRACE ``` - executable to mass convert you prompts from png to svg.
 
 * You can either generate txt2vectorgraphics and finish/edit them in this svg editor
 * Or start drawing in svg editor and send your sketches to Controlnet (txt/img2-img) to a particular control net instance.
 
 # Installation
-* Easy way: open Extension Tab in SD-Webui and load Available Extensions, checkbox the Vector Studio
-* Or: Copy this url from the git repository and add this extension by pasting it into the Extension Tab/Url. (more or less git clone)
+* Open Extension Tab in SD-Webui and paste this GITHUB-url into the "Install using Url" textbox.
+* On first run, the extension will try to find POTRACE in the bin-folder. If no executable there, it will download the POTRACE (.exe) and copy it into the bin fodler for you.
+The binary is downloaded from sourceforge like https://potrace.sourceforge.net/#downloading
+
 ---
-* If you want to create vectorgraphics (svg) download POTRACE and put it into ```extensionfolder/bin/```  
-This is tested only under windows, yet.
-
-## For Hackers and Betatesters
-* Linux & MacOos. Potrace is compiled for each OS, so you can just download and add the binary as mentioned to ```extensionfolder/bin/potrace.exe```.  
-Yes, rename it either to ```potrace.exe```or create a link named potrace.exe and point to your installation.
-
-
 ## How it works
 It tunes your prompts in that way to create suitable images to be vectorizied by the POTRACE command line tool.
 The resulting SVG or PDF file is stored next to your png files in output/samples (default).
@@ -33,6 +29,8 @@ coffe mug in shape of a heart | <img src="https://user-images.githubusercontent.
 
 
 ### Screenshot
+![image](https://github.com/GeorgLegato/stable-diffusion-webui-vectorstudio/assets/7210708/81c575a6-cc17-4551-ad60-066e60e74dd3)
+![image](https://github.com/GeorgLegato/stable-diffusion-webui-vectorstudio/assets/7210708/1bbbef36-71a8-44e7-8e4f-4c823b36f463)
 ![image](https://user-images.githubusercontent.com/7210708/221387609-37ca2c3c-3da5-42aa-ad0f-8491c5f862f7.png)
 ![image](https://user-images.githubusercontent.com/7210708/221387629-1666d116-7213-41af-8b6f-a9ace3fc6083.png)
 
@@ -47,18 +45,6 @@ Dark Theme, with SVG-Background checkerboard:
 * New: Added Visual Styles - RadioButtons provided by the script. Edit the script to extend of modify 
 Stuff like Illustration, Tattoo, Anime etc, to save your time finding prompts on your own.
 If nothing matches, select "None - promp only" and have back full control.
-
-# POTRACE for non-windows
-### Linux
-If you're running under WSL, Ubuntu or another Linux distro you will need to install potrace. 
-Run `sudo apt install potrace`.
-
-### Mac
-Run `brew install potrace`.  Ensure `potrace` is in your PATH so that you could run in simply by calling from a command terminal.
-
-## Dependencies, Potrace
-https://potrace.sourceforge.net/download/1.16/potrace-1.16.win64.zip  
-and extracts only the executable into scripts folder in the scripts folder.
 
 # Recommendations
 - Use short prompts, like "Einstein", "Happy Einstein" ...
@@ -98,10 +84,6 @@ For customizing please edit the file ```style.css``` in the extension folder of 
 ![image](https://user-images.githubusercontent.com/7210708/227958543-b7b7564b-60e4-4307-b00d-b6ce94cd3385.png)
 * Fix on Controlnet internal images
 * Display SVGs in gallery!
-  
-
-
-
 
 ## Todos
 * Linux/Mac-Support

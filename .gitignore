@@ -1,3 +1,5 @@
-bin/potrace.exe
+bin/*
+bin/potrace
 scripts/__pycache__/pngsvg.cpython-310.pyc
 scripts/__pycache__/vectorstudio.cpython-310.pyc
+scripts/__pycache__/*.pyc
